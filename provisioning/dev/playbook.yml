@@ -1,0 +1,20 @@
+---
+- hosts: all
+  tasks:
+
+  # Install and configure Elasticsearch
+  - apt_key: keyserver=keyserver.ubuntu.com id=EEA14886
+  - apt_repository: repo='deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' update_cache=yes
+  - apt_key: url="https://packages.elastic.co/GPG-KEY-elasticsearch" id="D88E42B4"
+  - shell: echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+  - apt: name=oracle-java8-installer
+  - apt_repository: repo="deb http://packages.elastic.co/elasticsearch/2.x/debian stable main" update_cache=yes
+  - apt: name=elasticsearch state=present
+  - service: name=elasticsearch state=started enabled=yes
+  # Changing the default configuration
+  - copy: src=elasticsearch.yml dest=/etc/elasticsearch/elasticsearch.yml
+    notify: restart elasticsearch
+
+  handlers:
+    - name: restart elasticsearch
+      service: name=elasticsearch state=restarted
